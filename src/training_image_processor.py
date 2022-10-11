@@ -6,6 +6,41 @@ from pygame_gui.windows.ui_file_dialog import UIFileDialog
 from pygame_gui.elements.ui_button import UIButton
 from pygame.rect import Rect
 
+class SelectionBox:
+    def __init__(self):
+        self.location = (0,0)
+        self.size = 512
+
+    def draw(self):
+        s = self.size/2
+        rect1 = Rect((self.location[0]-s, self.location[1]-s), (self.size, self.size))
+        rect2 = Rect((self.location[0]-s-1, self.location[1]-s-1), (self.size+2, self.size+2))
+        black = (0,0,0)
+        white = (255,255,255)
+        pygame.draw.rect(screen, black, rect1, width=1)
+        pygame.draw.rect(screen, white, rect2, width=1)
+
+class ScrollHandler:
+    def __init__(self):
+        self.frames_scrolled = 0
+        self.y = 0
+        self.rate = 0
+
+    def start_frame(self):
+        if self.y == 0:
+            self.rate = 0
+            self.frames_scrolled = 0
+        self.y = 0
+    def scroll(self, scroll_y):
+        self.y = scroll_y
+        self.frames_scrolled += 1
+        self.rate += pow(self.frames_scrolled, 2) * scroll_y * (1/3)
+        return self.rate
+
+def clamp(x, _min, _max):
+    return max(min(x,_max),_min)
+
+
 # Initialize program
 pygame.init()
 if not pygame.image.get_extended():
@@ -20,6 +55,7 @@ clock = pygame.time.Clock()
 files = []
 image = None
 scaled_image = None
+scroll_handler = ScrollHandler()
 
 #Initialize UI elements
 button_rect = Rect(0, 0, 150, 25)
@@ -29,6 +65,8 @@ open_folder_label = pygame_gui.elements.ui_label.UILabel(Rect(150, 0, 800 - 150,
 
 folder_selection_button = UIButton(relative_rect=Rect(0, 0, 150, 25),
                                    manager=manager, text='Open Folder')
+selection_box = SelectionBox()
+
 def FolderSelection():
     dialog = UIFileDialog(rect=Rect(0, 0, 600, 400), manager=manager,
                                 allow_picking_directories=True,
@@ -77,6 +115,7 @@ def Draw():
     screen.fill((0,0,0))
     if image:
         screen.blit(scaled_image, (0, 25))
+    selection_box.draw()
     manager.draw_ui(screen)
     pygame.display.update()
 
@@ -88,6 +127,7 @@ open_folder = ""
 #Main loop
 while True:
     time_delta = clock.tick(60) / 1000.0
+    scroll_handler.start_frame()
 
     #Process events
     for event in pygame.event.get():
@@ -117,6 +157,12 @@ while True:
             elif event.ui_element == folder_selection.close_window_button or \
                  event.ui_element == folder_selection.cancel_button:
                     folder_selection = FolderSelection()
+
+        elif event.type == pygame.MOUSEMOTION:
+            selection_box.location = event.pos
+
+        elif event.type == pygame.MOUSEWHEEL:
+            selection_box.size = clamp(selection_box.size + scroll_handler.scroll(event.y), 100, min(pygame.display.get_surface().get_size()))
 
         manager.process_events(event)
 
