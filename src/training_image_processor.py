@@ -60,13 +60,15 @@ def LoadImage():
     loaded = False
     while not loaded:
         if files:
-            #try:
-            global image
-            image = pygame.image.load(os.path.join(open_folder, files[0])).convert().convert_alpha()
-            ScaleImage()
-            loaded = True
-            #except:
-            #    files.pop(0)
+            try:
+                global image
+                image = pygame.image.load(os.path.join(open_folder, files[0])).convert().convert_alpha()
+                ScaleImage()
+                loaded = True
+            except pygame.error as e:
+                if str(e) != "Unsupported image format":
+                    raise Exception().with_traceback(e.__traceback__)
+                files.pop(0)
         else:
             break
 
