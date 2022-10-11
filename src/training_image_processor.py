@@ -1,3 +1,5 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import pygame_gui
 from pygame_gui.windows.ui_file_dialog import UIFileDialog
@@ -6,6 +8,8 @@ from pygame.rect import Rect
 
 # Initialize program
 pygame.init()
+if not pygame.image.get_extended():
+    print("Warning: You are using a version of pygame with limited image format support.")
 screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE)
 manager = pygame_gui.UIManager((800, 600))
 clock = pygame.time.Clock()
