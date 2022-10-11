@@ -8,7 +8,7 @@ from pygame.rect import Rect
 
 class SelectionBox:
     def __init__(self):
-        self.location = (0,0)
+        self.location = [0,0]
         self.size = 512
 
     def draw(self):
@@ -19,6 +19,15 @@ class SelectionBox:
         white = (255,255,255)
         pygame.draw.rect(screen, black, rect1, width=1)
         pygame.draw.rect(screen, white, rect2, width=1)
+
+    def clamp(self, rect: Rect):
+        s = self.size/2
+        min_x = rect.left + s
+        max_x = rect.right - s
+        min_y = rect.top + s
+        max_y = rect.bottom - s
+        self.location[0] = clamp(self.location[0], min_x, max_x)
+        self.location[1] = clamp(self.location[1], min_y, max_y)
 
 class ScrollHandler:
     def __init__(self):
@@ -56,14 +65,15 @@ files = []
 image = None
 scaled_image = None
 scroll_handler = ScrollHandler()
+ui_bar_height = 25
 
 #Initialize UI elements
-button_rect = Rect(0, 0, 150, 25)
+button_rect = Rect(0, 0, 150, ui_bar_height)
 button_rect.topright = (0,0)
-open_folder_label = pygame_gui.elements.ui_label.UILabel(Rect(150, 0, 800 - 150, 25),
+open_folder_label = pygame_gui.elements.ui_label.UILabel(Rect(150, 0, 800 - 150, ui_bar_height),
                                                          "", manager)
 
-folder_selection_button = UIButton(relative_rect=Rect(0, 0, 150, 25),
+folder_selection_button = UIButton(relative_rect=Rect(0, 0, 150, ui_bar_height),
                                    manager=manager, text='Open Folder')
 selection_box = SelectionBox()
 
@@ -114,8 +124,9 @@ def Draw():
     manager.update(time_delta)
     screen.fill((0,0,0))
     if image:
-        screen.blit(scaled_image, (0, 25))
-    selection_box.draw()
+        screen.blit(scaled_image, (0, ui_bar_height))
+    if image:
+        selection_box.draw()
     manager.draw_ui(screen)
     pygame.display.update()
 
@@ -137,7 +148,7 @@ while True:
         elif event.type == pygame.VIDEORESIZE:
             #Resize UI Elements
             w, h = pygame.display.get_surface().get_size()
-            open_folder_label.set_dimensions((w-150,25))
+            open_folder_label.set_dimensions((w-150,ui_bar_height))
             if image:
                 ScaleImage()
             screen.fill((0,0,0))
@@ -154,15 +165,27 @@ while True:
                 files = [f for f in os.listdir(open_folder) if os.path.isfile(os.path.join(open_folder, f))]
                 folder_selection.hide()
                 LoadImage()
+            elif event.ui_element == folder_selection.parent_directory_button:
+                folder_selection.ok_button.enable()
+            elif event.ui_element == folder_selection.home_button:
+                folder_selection.ok_button.enable()
             elif event.ui_element == folder_selection.close_window_button or \
                  event.ui_element == folder_selection.cancel_button:
                     folder_selection = FolderSelection()
 
         elif event.type == pygame.MOUSEMOTION:
-            selection_box.location = event.pos
+            if image:
+                selection_box.location[0] = event.pos[0]
+                selection_box.location[1] = event.pos[1]
+                image_rect = Rect((0,ui_bar_height), scaled_image.get_size())
+                selection_box.clamp(image_rect)
 
         elif event.type == pygame.MOUSEWHEEL:
-            selection_box.size = clamp(selection_box.size + scroll_handler.scroll(event.y), 100, min(pygame.display.get_surface().get_size()))
+            if image:
+                w,h = scaled_image.get_size()
+                selection_box.size = clamp(selection_box.size + scroll_handler.scroll(event.y), 100, min(w,h))
+                image_rect = Rect((0,ui_bar_height), (w,h))
+                selection_box.clamp(image_rect)
 
         manager.process_events(event)
 
