@@ -13,6 +13,9 @@ if not pygame.image.get_extended():
 screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE)
 manager = pygame_gui.UIManager((800, 600))
 clock = pygame.time.Clock()
+files = []
+image = None
+scaled_image = None
 
 #Initialize UI elements
 button_rect = Rect(0, 0, 150, 25)
@@ -39,9 +42,35 @@ def FolderSelection():
     dialog.rebuild()
     return dialog
 
+def ScaleImage():
+    w, h = pygame.display.get_surface().get_size()
+    h -= 25
+    iw, ih = image.get_size()
+    scale = min(w/iw, h/ih)
+    scaled_size = (iw*scale,ih*scale)
+    global scaled_image
+    scaled_image = pygame.transform.smoothscale(image, scaled_size)
+
+
+def LoadImage():
+    loaded = False
+    while not loaded:
+        if files:
+            #try:
+            global image
+            image = pygame.image.load(os.path.join(open_folder, files[0])).convert().convert_alpha()
+            ScaleImage()
+            loaded = True
+            #except:
+            #    files.pop(0)
+        else:
+            break
+
 def Draw():
     manager.update(time_delta)
     screen.fill((0,0,0))
+    if image:
+        screen.blit(scaled_image, (0, 25))
     manager.draw_ui(screen)
     pygame.display.update()
 
@@ -63,6 +92,8 @@ while True:
             #Resize UI Elements
             w, h = pygame.display.get_surface().get_size()
             open_folder_label.set_dimensions((w-150,25))
+            if image:
+                ScaleImage()
             screen.fill((0,0,0))
             
             #Update Manager
@@ -74,7 +105,9 @@ while True:
             elif event.ui_element == folder_selection.ok_button:
                 open_folder_label.set_text(folder_selection.current_directory_path)
                 open_folder = folder_selection.current_directory_path
+                files = [f for f in os.listdir(open_folder) if os.path.isfile(os.path.join(open_folder, f))]
                 folder_selection.hide()
+                LoadImage()
             elif event.ui_element == folder_selection.close_window_button or \
                  event.ui_element == folder_selection.cancel_button:
                     folder_selection = FolderSelection()
