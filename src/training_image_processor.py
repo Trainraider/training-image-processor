@@ -10,7 +10,11 @@ from pygame.rect import Rect
 pygame.init()
 if not pygame.image.get_extended():
     print("Warning: You are using a version of pygame with limited image format support.")
+project_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+icon = pygame.image.load(os.path.join(project_folder, "assets", "emblem-photos-symbolic.svg"))
+pygame.display.set_icon(icon)
 screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE)
+pygame.display.set_caption('Training Image Processor')
 manager = pygame_gui.UIManager((800, 600))
 clock = pygame.time.Clock()
 files = []
