@@ -4,6 +4,7 @@ import pygame
 import pygame_gui
 from pygame_gui.windows.ui_file_dialog import UIFileDialog
 from pygame_gui.elements.ui_button import UIButton
+from pygame_gui.elements.ui_image import UIImage
 from pygame.rect import Rect
 
 class SelectionBox:
@@ -76,6 +77,23 @@ open_folder_label = pygame_gui.elements.ui_label.UILabel(Rect(150, 0, 800 - 150,
 
 folder_selection_button = UIButton(relative_rect=Rect(0, 0, 150, ui_row_height),
                                    manager=manager, text='Open Folder')
+
+clockwise_button = UIButton(Rect(0,ui_row_height,ui_row_height,ui_row_height), text='', manager=manager)
+clockwise_icon = pygame.image.load(os.path.join(project_folder, 'assets', 'object-rotate-right-symbolic.svg'))
+clockwise_button_image = UIImage(Rect(0,ui_row_height,ui_row_height,ui_row_height).inflate(-8,-8), clockwise_icon, manager)
+
+cclockwise_button = UIButton(Rect(ui_row_height,ui_row_height,ui_row_height,ui_row_height), text='', manager=manager)
+cclockwise_icon = pygame.image.load(os.path.join(project_folder, 'assets', 'object-rotate-left-symbolic.svg'))
+cclockwise_button_image = UIImage(Rect(ui_row_height,ui_row_height,ui_row_height,ui_row_height).inflate(-8,-8), cclockwise_icon, manager)
+
+fliph_button = UIButton(Rect(ui_row_height*2,ui_row_height,ui_row_height,ui_row_height), text='', manager=manager)
+fliph_icon = pygame.image.load(os.path.join(project_folder, 'assets', 'object-flip-horizontal-symbolic.svg'))
+fliph_button_image = UIImage(Rect(ui_row_height*2,ui_row_height,ui_row_height,ui_row_height).inflate(-8,-8), fliph_icon, manager)
+
+flipv_button = UIButton(Rect(ui_row_height*3,ui_row_height,ui_row_height,ui_row_height), text='', manager=manager)
+flipv_icon = pygame.image.load(os.path.join(project_folder, 'assets', 'object-flip-vertical-symbolic.svg'))
+flipv_button_image = UIImage(Rect(ui_row_height*3,ui_row_height,ui_row_height,ui_row_height).inflate(-8,-8), flipv_icon, manager)
+
 selection_box = SelectionBox()
 
 def FolderSelection():
@@ -97,7 +115,7 @@ def FolderSelection():
 
 def ScaleImage():
     w, h = pygame.display.get_surface().get_size()
-    h -= 25
+    h -= ui_bar_height
     iw, ih = image.get_size()
     scale = min(w/iw, h/ih)
     scaled_size = (iw*scale,ih*scale)
@@ -173,7 +191,22 @@ while True:
             elif event.ui_element == folder_selection.close_window_button or \
                  event.ui_element == folder_selection.cancel_button:
                     folder_selection = FolderSelection()
-
+            elif event.ui_element == clockwise_button:
+                if image:
+                    image = pygame.transform.rotate(image, -90)
+                    ScaleImage()
+            elif event.ui_element == cclockwise_button:
+                if image:
+                    image = pygame.transform.rotate(image, 90)
+                    ScaleImage()
+            elif event.ui_element == fliph_button:
+                if image:
+                    image = pygame.transform.flip(image, True, False)
+                    ScaleImage()
+            elif event.ui_element == flipv_button:
+                if image:
+                    image = pygame.transform.flip(image, False, True)
+                    ScaleImage()
         elif event.type == pygame.MOUSEMOTION:
             if image:
                 selection_box.location[0] = event.pos[0]
@@ -183,10 +216,14 @@ while True:
 
         elif event.type == pygame.MOUSEWHEEL:
             if image:
+                pos = pygame.mouse.get_pos()
                 w,h = scaled_image.get_size()
                 selection_box.size = clamp(selection_box.size + scroll_handler.scroll(event.y), 100, min(w,h))
+                selection_box.location[0] = pos[0]
+                selection_box.location[1] = pos[1]
                 image_rect = Rect((0,ui_bar_height), (w,h))
                 selection_box.clamp(image_rect)
+
 
         manager.process_events(event)
 
