@@ -65,15 +65,16 @@ files = []
 image = None
 scaled_image = None
 scroll_handler = ScrollHandler()
-ui_bar_height = 25
+ui_row_height = 25
+ui_bar_height = 50
 
 #Initialize UI elements
 button_rect = Rect(0, 0, 150, ui_bar_height)
 button_rect.topright = (0,0)
-open_folder_label = pygame_gui.elements.ui_label.UILabel(Rect(150, 0, 800 - 150, ui_bar_height),
+open_folder_label = pygame_gui.elements.ui_label.UILabel(Rect(150, 0, 800 - 150, ui_row_height),
                                                          "", manager)
 
-folder_selection_button = UIButton(relative_rect=Rect(0, 0, 150, ui_bar_height),
+folder_selection_button = UIButton(relative_rect=Rect(0, 0, 150, ui_row_height),
                                    manager=manager, text='Open Folder')
 selection_box = SelectionBox()
 
@@ -148,7 +149,7 @@ while True:
         elif event.type == pygame.VIDEORESIZE:
             #Resize UI Elements
             w, h = pygame.display.get_surface().get_size()
-            open_folder_label.set_dimensions((w-150,ui_bar_height))
+            open_folder_label.set_dimensions((w-150,ui_row_height))
             if image:
                 ScaleImage()
             screen.fill((0,0,0))
