@@ -4,6 +4,8 @@ This project speeds up the process of manually preparing images for training Sta
 
 It provides a streamlined UI for selecting a square portion of a picture and then scales that section to 512x512 for training, and then outputs it and loads the next image, all in a single click!
 
+The code has been thrown together quickly. It's disorganized and unprincipled. I made the minimum viable project to speed up my own workflow I was interested in. Pull requests are welcome.
+
 ![example of UI](https://github.com/Trainraider/training-image-processor/blob/main/screenshot.jpg?raw=true)
 
 ## Installation and Launching
