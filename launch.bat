@@ -1,0 +1,1 @@
+.\venv\Scripts\python .\src\training_image_processor.py
