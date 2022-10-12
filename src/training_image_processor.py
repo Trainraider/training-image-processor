@@ -94,6 +94,12 @@ flipv_button = UIButton(Rect(ui_row_height*3,ui_row_height,ui_row_height,ui_row_
 flipv_icon = pygame.image.load(os.path.join(project_folder, 'assets', 'object-flip-vertical-symbolic.svg'))
 flipv_button_image = UIImage(Rect(ui_row_height*3,ui_row_height,ui_row_height,ui_row_height).inflate(-8,-8), flipv_icon, manager)
 
+image_rect = Rect(0, ui_bar_height, 800, 600-ui_bar_height)
+image_button = UIButton(image_rect, '', manager)
+placeholder_image = pygame.Surface((1,1))
+placeholder_image.fill((0,0,0))
+image_element = UIImage(image_rect, placeholder_image, manager)
+
 selection_box = SelectionBox()
 
 def FolderSelection():
@@ -121,6 +127,10 @@ def ScaleImage():
     scaled_size = (iw*scale,ih*scale)
     global scaled_image
     scaled_image = pygame.transform.smoothscale(image, scaled_size)
+    image_element.set_image(scaled_image)
+    image_rect = Rect((0, ui_bar_height),scaled_size)
+    image_button.set_dimensions(image_rect.size)
+    image_element.set_dimensions(image_rect.size)
 
 
 def LoadImage():
@@ -142,11 +152,9 @@ def LoadImage():
 def Draw():
     manager.update(time_delta)
     screen.fill((0,0,0))
-    if image:
-        screen.blit(scaled_image, (0, ui_bar_height))
+    manager.draw_ui(screen)
     if image:
         selection_box.draw()
-    manager.draw_ui(screen)
     pygame.display.update()
 
 
@@ -207,6 +215,8 @@ while True:
                 if image:
                     image = pygame.transform.flip(image, False, True)
                     ScaleImage()
+            elif event.ui_element == image_button:
+                pass
         elif event.type == pygame.MOUSEMOTION:
             if image:
                 selection_box.location[0] = event.pos[0]
