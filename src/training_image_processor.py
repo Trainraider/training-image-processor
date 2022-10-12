@@ -30,6 +30,22 @@ class SelectionBox:
         self.location[0] = clamp(self.location[0], min_x, max_x)
         self.location[1] = clamp(self.location[1], min_y, max_y)
 
+    def image_rect(self):
+        s = self.size/2
+        rect = Rect((self.location[0]-s, self.location[1]-s), (self.size, self.size))
+        rect.move_ip(0, -ui_bar_height)
+        scale = image.get_size()[0]/scaled_image.get_size()[0]
+        rect = Rect((rect.left*scale, rect.top*scale), (rect.width*scale, rect.height*scale))
+        return rect
+
+def ProcessedImage():
+    rect = selection_box.image_rect()
+    pimage = pygame.Surface((rect.width, rect.height))
+    global image
+    pimage.blit(image, (0,0), area=rect)
+    pimage = pygame.transform.smoothscale(pimage, (512,512))
+    return pimage
+
 class ScrollHandler:
     def __init__(self):
         self.frames_scrolled = 0
@@ -216,7 +232,8 @@ while True:
                     image = pygame.transform.flip(image, False, True)
                     ScaleImage()
             elif event.ui_element == image_button:
-                pass
+                processed_image = ProcessedImage()
+                pygame.image.save(processed_image, os.path.join(open_folder, 'output.png'))
         elif event.type == pygame.MOUSEMOTION:
             if image:
                 selection_box.location[0] = event.pos[0]
