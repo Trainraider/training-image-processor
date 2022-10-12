@@ -1,4 +1,4 @@
-import os
+import os, shutil
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import pygame_gui
@@ -45,6 +45,25 @@ def ProcessedImage():
     pimage.blit(image, (0,0), area=rect)
     pimage = pygame.transform.smoothscale(pimage, (512,512))
     return pimage
+
+def ClickImage():
+    processed_image = ProcessedImage()
+    output_path = os.path.join(open_folder, 'outputs')
+    originals_path = os.path.join(open_folder, 'originals')
+
+    try:
+        os.mkdir(output_path)
+    except FileExistsError:
+        pass
+    try:
+        os.mkdir(originals_path)
+    except FileExistsError:
+        pass
+    
+    pygame.image.save(processed_image, os.path.join(output_path, files[0]))
+    shutil.move(os.path.join(open_folder, files[0]), os.path.join(originals_path, files[0]))
+    files.pop(0)
+    LoadImage()
 
 class ScrollHandler:
     def __init__(self):
@@ -157,6 +176,7 @@ def LoadImage():
                 global image
                 image = pygame.image.load(os.path.join(open_folder, files[0])).convert().convert_alpha()
                 ScaleImage()
+                selection_box.size = min(scaled_image.get_size())
                 loaded = True
             except pygame.error as e:
                 if str(e) != "Unsupported image format":
@@ -232,8 +252,7 @@ while True:
                     image = pygame.transform.flip(image, False, True)
                     ScaleImage()
             elif event.ui_element == image_button:
-                processed_image = ProcessedImage()
-                pygame.image.save(processed_image, os.path.join(open_folder, 'output.png'))
+                ClickImage()
         elif event.type == pygame.MOUSEMOTION:
             if image:
                 selection_box.location[0] = event.pos[0]
