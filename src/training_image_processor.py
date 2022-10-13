@@ -129,6 +129,10 @@ flipv_button = UIButton(Rect(ui_row_height*3,ui_row_height,ui_row_height,ui_row_
 flipv_icon = pygame.image.load(os.path.join(project_folder, 'assets', 'object-flip-vertical-symbolic.svg'))
 flipv_button_image = UIImage(Rect(ui_row_height*3,ui_row_height,ui_row_height,ui_row_height).inflate(-8,-8), flipv_icon, manager)
 
+next_button = UIButton(Rect(ui_row_height*4,ui_row_height,ui_row_height,ui_row_height), text='', manager=manager)
+next_icon = pygame.image.load(os.path.join(project_folder, 'assets', 'go-next-symbolic.svg'))
+next_button_image = UIImage(Rect(ui_row_height*4,ui_row_height,ui_row_height,ui_row_height).inflate(-8,-8), next_icon, manager)
+
 image_rect = Rect(0, ui_bar_height, 800, 600-ui_bar_height)
 image_button = UIButton(image_rect, '', manager)
 placeholder_image = pygame.Surface((1,1))
@@ -178,11 +182,15 @@ def LoadImage():
                 ScaleImage()
                 selection_box.size = min(scaled_image.get_size())
                 loaded = True
+                image_button.show()
             except pygame.error as e:
                 if str(e) != "Unsupported image format":
                     raise Exception().with_traceback(e.__traceback__)
                 files.pop(0)
         else:
+            image = None
+            image_element.set_image(placeholder_image)
+            image_button.hide()
             break
 
 def Draw():
@@ -252,7 +260,12 @@ while True:
                     image = pygame.transform.flip(image, False, True)
                     ScaleImage()
             elif event.ui_element == image_button:
-                ClickImage()
+                if image:
+                    ClickImage()
+            elif event.ui_element == next_button:
+                if files:
+                    files.pop(0)
+                    LoadImage()
         elif event.type == pygame.MOUSEMOTION:
             if image:
                 selection_box.location[0] = event.pos[0]
