@@ -60,7 +60,21 @@ def ClickImage():
     except FileExistsError:
         pass
     
-    pygame.image.save(processed_image, os.path.join(output_path, files[0]))
+    output_name = os.path.join(output_path, files[0])
+    
+    if not os.path.exists(output_name):
+        pygame.image.save(processed_image, output_name)
+    else:
+        saved = False
+        suffix = 1
+        while not saved:
+            output_name_new = output_name + '_' + str(suffix)
+            if not os.path.exists(output_name_new):
+                pygame.image.save(processed_image, output_name_new)
+                saved = True
+                break
+            suffix += 1
+    
     shutil.move(os.path.join(open_folder, files[0]), os.path.join(originals_path, files[0]))
     files.pop(0)
     LoadImage()
